@@ -1,19 +1,16 @@
 package config
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/go-oauth2/oauth2/v4/errors"
-	"github.com/go-oauth2/oauth2/v4/manage"
-	"github.com/go-oauth2/oauth2/v4/server"
-	"github.com/go-oauth2/oauth2/v4/store"
+	ginserver "github.com/go-oauth2/gin-server"
+	"gopkg.in/oauth2.v3/manage"
 	"gopkg.in/oauth2.v3/models"
+	"gopkg.in/oauth2.v3/server"
+	"gopkg.in/oauth2.v3/store"
 )
 
-func SecurityConfig() {
+func Oauth2Service() {
 	manager := manage.NewDefaultManager()
-	// token memory store
+	// token store
 	manager.MustTokenStorage(store.NewMemoryTokenStore())
 
 	// client memory store
@@ -25,29 +22,7 @@ func SecurityConfig() {
 	})
 	manager.MapClientStorage(clientStore)
 
-	srv := server.NewDefaultServer(manager)
-	srv.SetAllowGetAccessRequest(true)
-	srv.SetClientInfoHandler(server.ClientFormHandler)
-
-	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
-		log.Println("Internal Error:", err.Error())
-		return
-	})
-
-	srv.SetResponseErrorHandler(func(re *errors.Response) {
-		log.Println("Response Error:", re.Error.Error())
-	})
-
-	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-		err := srv.HandleAuthorizeRequest(w, r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-	})
-
-	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		srv.HandleTokenRequest(w, r)
-	})
-
-	http.ListenAndServe(":8080", nil)
+	ginserver.InitServer(manager)
+	ginserver.SetAllowGetAccessRequest(true)
+	ginserver.SetClientInfoHandler(server.ClientFormHandler)
 }
