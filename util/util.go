@@ -6,10 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ReturnOk(c *gin.Context, obj interface{}) {
+func ReturnTableList(c *gin.Context, obj interface{}, table string) {
 	c.JSON(http.StatusOK, gin.H{
-		"obj": obj,
+		table: obj,
 	})
+}
+
+func ReturnTableSingel(c *gin.Context, obj interface{}) {
+	c.JSON(http.StatusOK, obj)
 }
 
 func ReturnErrorGeneral(c *gin.Context, msg interface{}, cause interface{}) {

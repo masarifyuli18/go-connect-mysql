@@ -1,28 +1,21 @@
 package connection
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-gorp/gorp"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-var Db = connectDatabase()
-
-func connectDatabase() *gorp.DbMap {
-	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/simpleapp")
-	checkErr(err, "sql.Open failed")
-	dbmap := &gorp.DbMap{
-		Db:              db,
-		Dialect:         gorp.MySQLDialect{"InnoDB", "UTF8"},
-		TypeConverter:   nil,
-		ExpandSliceArgs: false,
+func ConnectDatabase() (*gorm.DB, error) {
+	// dsn := "sqlserver://root:root@localhost:3306?database=simpleapp?net_write_timeout=6000"
+	db, err := gorm.Open("mysql", "root:root@(localhost:3306)/simpleapp?charset=utf8&parseTime=True&loc=Local")
+	if err != nil {
+		panic("failed to connect database")
 	}
-	err = dbmap.CreateTablesIfNotExists()
-	checkErr(err, "Create tables failed")
-	return dbmap
+	// defer db.Close()
+	return db, nil
 }
 
 func checkErr(err error, msg string) {
